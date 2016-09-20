@@ -1,12 +1,23 @@
-#include Makeconf.win
-CXX_STD = CXX1X
-GDAL_INC_DIR=$(GDAL_HOME)/include
-GDAL_LIB_DIR=$(GDAL_HOME)/lib
+CXX_STD=CXX11
+COMPILED_BY ?= gcc-4.6.3
+RWINLIB = lib${subst gcc,,${COMPILED_BY}}${R_ARCH}
 
-PKG_CPPFLAGS=-I$(GDAL_INC_DIR)
+PKG_CPPFLAGS = \
+	-I../windows/gdal-2.1.1/include
 
-ifeq "$(WIN)" "64"
-PKG_LIBS=-L$(GDAL_LIB_DIR)/x64 -lgdal -lproj -lexpat -lsqlite3 -lodbc32 -lodbccp32 -liconv -lws2_32
-else
-PKG_LIBS=-L$(GDAL_LIB_DIR)/i386 -lgdal -lproj -lexpat -lsqlite3 -lodbc32 -lodbccp32 -liconv -lws2_32
-endif
+PKG_LIBS = \
+	-L../windows/gdal-2.1.1/${RWINLIB} \
+	-lgdal -lproj -lexpat -lsqlite3 -lodbc32 -lodbccp32 -liconv -lws2_32
+
+all: clean winlibs
+
+winlibs:
+	mkdir -p ../inst
+	"${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" "../tools/winlibs.R"
+	cp -r ../windows/gdal-2.1.1/share/gdal ../inst/
+	cp -r ../windows/gdal-2.1.1/share/proj ../inst/
+
+clean:
+	rm -f $(OBJECTS) $(SHLIB)
+
+.PHONY: all winlibs clean
